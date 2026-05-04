@@ -53,6 +53,7 @@ def priority(my_heap, parent, child):
     """
     return my_heap["cmp_function"](parent, child)
 
+
 def size(my_heap):
     """
     Retorna el número de elementos del heap
@@ -96,40 +97,53 @@ def insert(my_heap, priority_value, value):
 
 def sink(heap, pos):
     size_heap = heap["size"]
-    while True:
-        left = 2 * pos + 1
-        right = 2 * pos + 2
-        smallest = pos
 
-        if left < size_heap and priority(heap, left, smallest):
-            smallest = left
-        if right < size_heap and priority(heap, right, smallest):
-            smallest = right
+    while 2 * pos <= size_heap:
+        left = 2 * pos
+        right = left + 1
+        smallest = left
 
-        if smallest != pos:
-            exchange(heap, pos, smallest)
-            pos = smallest
-        else:
+        if right <= size_heap:
+            left_node = al.get_element(heap["elements"], left)
+            right_node = al.get_element(heap["elements"], right)
+            if priority(heap, right_node, left_node):
+                smallest = right
+
+        parent_node = al.get_element(heap["elements"], pos)
+        child_node = al.get_element(heap["elements"], smallest)
+
+        if priority(heap, parent_node, child_node):
             break
+
+        exchange(heap, pos, smallest)
+        pos = smallest
 
 def remove(heap):
     if is_empty(heap):
         return None
 
-    exchange(heap, 0, heap["size"] - 1)
-    removed = heap["elements"].pop()
+    # Guardar el entry con mayor prioridad
+    top_entry = al.get_element(heap["elements"], 1)
+    top_value = pqe.get_value(top_entry)
+
+    exchange(heap, 1, heap["size"])
+    al.remove_last(heap["elements"])
     heap["size"] -= 1
-    sink(heap, 0)
-    return removed
+
+    sink(heap, 1)
+    return top_value
+
 
 def get_first_priority(heap):
     if is_empty(heap):
         return None
-    return pqe.get_priority(heap["elements"][0])
+    return pqe.get_priority(al.get_element(heap["elements"], 1))
+
 
 def is_present_value(heap, value):
-    for i in range(heap["size"]):
-        if pqe.get_value(heap["elements"][i]) == value:
+    for i in range(1, heap["size"] + 1):
+        entry = al.get_element(heap["elements"], i)
+        if pqe.get_value(entry) == value:
             return i
     return -1
 
@@ -141,7 +155,7 @@ def improve_priority(heap, priority_value, value):
     if pos == -1:
         return heap
 
-    pqe.set_priority(heap["elements"][pos], priority_value)
+    pqe.set_priority(al.get_element(heap["elements"], pos), priority_value)
     swim(heap, pos)
     return heap
 
