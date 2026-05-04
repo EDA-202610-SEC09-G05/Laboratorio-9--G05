@@ -94,3 +94,54 @@ def insert(my_heap, priority_value, value):
 
     return my_heap
 
+def sink(heap, pos):
+    size_heap = heap["size"]
+    while True:
+        left = 2 * pos + 1
+        right = 2 * pos + 2
+        smallest = pos
+
+        if left < size_heap and priority(heap, left, smallest):
+            smallest = left
+        if right < size_heap and priority(heap, right, smallest):
+            smallest = right
+
+        if smallest != pos:
+            exchange(heap, pos, smallest)
+            pos = smallest
+        else:
+            break
+
+def remove(heap):
+    if is_empty(heap):
+        return None
+
+    exchange(heap, 0, heap["size"] - 1)
+    removed = heap["elements"].pop()
+    heap["size"] -= 1
+    sink(heap, 0)
+    return removed
+
+def get_first_priority(heap):
+    if is_empty(heap):
+        return None
+    return pqe.get_priority(heap["elements"][0])
+
+def is_present_value(heap, value):
+    for i in range(heap["size"]):
+        if pqe.get_value(heap["elements"][i]) == value:
+            return i
+    return -1
+
+def contains(heap, value):
+    return is_present_value(heap, value) != -1
+
+def improve_priority(heap, priority_value, value):
+    pos = is_present_value(heap, value)
+    if pos == -1:
+        return heap
+
+    pqe.set_priority(heap["elements"][pos], priority_value)
+    swim(heap, pos)
+    return heap
+
