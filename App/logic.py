@@ -27,9 +27,8 @@
 import csv
 import time
 import os
-
-# TODO Realice la importación de priority queue
-# TODO Realice la importación de ArrayList (al) o SingleLinked (sl) como estructura de datos auxiliar para sus requerimientos
+from DataStructures.Priority_queue import priority_queue as pq
+from DataStructures.List import array_list as al
 
 
 data_dir = os.path.dirname(os.path.realpath('__file__')) + '/Data/singapur_bus_routes/'
@@ -38,19 +37,16 @@ data_dir = os.path.dirname(os.path.realpath('__file__')) + '/Data/singapur_bus_r
 def new_logic():
     """Inicializa el analizador.
 
-    stops: Lista para guardar las paradas de bus (array_list)
-    routes_pq: Cola de prioridad para gestionar las rutas de bus (priority_queue)
-
-    Returns:
-        dict: Analizador con las claves 'stops' y 'routes_pq' inicializadas a None.
+    stops: Lista para guardar las paradas de bus
+    routes_pq: Cola de prioridad (MinPQ) para gestionar las rutas
     """
     analyzer = {
         'stops': None,
         'routes_pq': None
     }
-    
-    analyzer['stops'] = None #TODO completar la creación de la lista
-    analyzer['routes_pq'] = None #TODO completar la creación de la cola de prioridad
+
+    analyzer['stops'] = al.new_list()
+    analyzer['routes_pq'] = pq.new_heap(is_min_pq=True)
 
     return analyzer
 
@@ -93,7 +89,17 @@ def add_stop(analyzer, stop):
     # Agregar la parada a la lista general de paradas
     al.add_last(analyzer['stops'], stop)
 
-    # TODO: Adicionar nuevo elemento a la cola de prioridad.
+    # Adicionar nuevo elemento a la cola de prioridad.
+    if int(stop['StopSequence']) == 1:
+        priority_value = int(stop['WD_FirstBus'])
+
+        element = {
+            'route_id': stop['ServiceNo'],
+            'direction': stop['Direction'],
+            'priority': priority_value
+        }
+
+        pq.insert(analyzer['routes_pq'], priority_value, element)
     # Para agregar un elemento a la cola de prioridad tener en cuenta las paradas
     # cuyo StopSequence sea igual a 1. 
     # La prioridad debe ser el valor de 'WD_FirstBus' y el valor asociado debe ser
@@ -163,6 +169,10 @@ def get_next_route(analyzer):
     # next_route = pq.min(analyzer['pq'])
     # pq.delMin(analyzer['pq'])
     # return next_route
+    if pq.is_empty(analyzer['routes_pq']):
+        return None
 
-    pass
+    next_route = pq.remove(analyzer['routes_pq'])
+
+    return next_route
 
