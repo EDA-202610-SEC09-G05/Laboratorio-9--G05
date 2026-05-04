@@ -31,8 +31,7 @@ from DataStructures.Priority_queue import priority_queue as pq
 from DataStructures.List import array_list as al
 
 
-data_dir = os.path.dirname(os.path.realpath('__file__')) + '/Data/singapur_bus_routes/'
-
+data_dir = os.path.dirname(os.path.realpath('__file__')) + '/Data/'
 
 def new_logic():
     """Inicializa el analizador.
@@ -67,31 +66,25 @@ def load_data(analyzer, file):
         add_stop(analyzer, stop)
     return analyzer
 
-
 def add_stop(analyzer, stop):
     """
     Adiciona una parada al analizador.
-
-    Parámetros:
-    ------------
-    analyzer : dict
-        Estructura de datos principal del analizador que contiene, entre otros,
-        la lista de paradas ('stops') y la cola de prioridad ('pq').
-    stop : dict
-        Información completa de una parada de bus, que incluye al menos los campos:
-        - ServiceNo: número de la ruta del bus
-        - Direction: dirección del recorrido (1 o 2)
-        - StopSequence: número de secuencia de la parada en la ruta
-        - WD_FirstBus: hora de salida del primer bus en día laboral
-        (además de otros datos complementarios)
     """
 
-    # Agregar la parada a la lista general de paradas
     al.add_last(analyzer['stops'], stop)
 
-    # Adicionar nuevo elemento a la cola de prioridad.
     if int(stop['StopSequence']) == 1:
-        priority_value = int(stop['WD_FirstBus'])
+        first_bus = stop['WD_FirstBus']
+
+        if first_bus is None:
+            return analyzer
+
+        first_bus = first_bus.strip()
+
+        if first_bus == '' or first_bus == '-':
+            return analyzer
+
+        priority_value = int(first_bus)
 
         element = {
             'route_id': stop['ServiceNo'],
@@ -100,25 +93,9 @@ def add_stop(analyzer, stop):
         }
 
         pq.insert(analyzer['routes_pq'], priority_value, element)
-    # Para agregar un elemento a la cola de prioridad tener en cuenta las paradas
-    # cuyo StopSequence sea igual a 1. 
-    # La prioridad debe ser el valor de 'WD_FirstBus' y el valor asociado debe ser
-    # un diccionario con la siguiente estructura:
-    # {
-    #   'route_id': stop['ServiceNo'],
-    #   'direction': stop['Direction'],
-    #   'priority': stop['WD_FirstBus']
-    # }
-    # Ejemplo:
-    # if stop['StopSequence'] == 1:
-    #     element = {
-    #         'route_id': stop['ServiceNo'],
-    #         'direction': stop['Direction'],
-    #         'priority': stop['WD_FirstBus']
-    #     }
-    #     pq.insert(analyzer['pq'], element['priority'], element)
 
     return analyzer
+
 
 
 # ___________________________________________________
